@@ -22,3 +22,34 @@ This repository contains a single-page portfolio built for graphic designer **Ar
 
 ### How to view
 Open `index.html` in any modern browser. No additional setup is required because all styling lives in `styles.css` and fonts are loaded from Google Fonts.
+
+## Backtesting helper
+
+A lightweight Python helper is included to fetch 1H BTC OHLCV data and scan for range-sweep entries that follow the EMA/market-structure rules you described.
+
+### Setup
+1. Install dependencies (recommend a virtual environment):
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+### Download BTC OHLCV data
+Fetch recent Binance candles (default: BTC/USDT, 1h, 1500 bars) and save them to CSV:
+```bash
+python backtest.py download --output data/btc_1h.csv
+```
+You can override the pair, timeframe, or limit via flags such as `--symbol BTC/BUSD --timeframe 1h --limit 2000`.
+
+### Generate sweep signals
+Run the sweep/structure-break scan against a CSV (columns: `timestamp,open,high,low,close,volume`):
+```bash
+python backtest.py signals data/btc_1h.csv
+```
+The script will print every detected setup that matches:
+* **Long bias:** close > EMA50 > EMA200, sweep of range low, then close back above the range high.
+* **Short bias:** close < EMA50 < EMA200, sweep of range high, then close back below the range low.
+* **Range definition:** swing highs/lows detected with a three-candle pivot on each side; a range forms once both sides exist with at least three bars between them.
+
+Use the printed timestamps and prices as a starting point for building and refining your backtests.
